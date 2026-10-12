@@ -1,8 +1,0 @@
-[
-{
-  "directory": "C:/Users/user/Desktop/dev_sem3/ip-filter-lab2/build",
-  "command": "C:\\msys64\\mingw64\\bin\\c++.exe -g -o CMakeFiles\\ip-filter-lab2.dir\\ip_filter.cpp.obj -c C:\\Users\\user\\Desktop\\dev_sem3\\ip-filter-lab2\\ip_filter.cpp",
-  "file": "C:/Users/user/Desktop/dev_sem3/ip-filter-lab2/ip_filter.cpp",
-  "output": "C:/Users/user/Desktop/dev_sem3/ip-filter-lab2/build/CMakeFiles/ip-filter-lab2.dir/ip_filter.cpp.obj"
-}
-]
