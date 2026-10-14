@@ -1,16 +1,4 @@
-#include <cassert>
-#include <cstdlib>
-#include <iostream>
-#include <string>
-#include <vector>
-#include <tuple>
-#include <fstream>
-#include <stdint.h>
-#include <algorithm>
-#include <ranges>
-#include <stdexcept>
-
-#define ip_tuple std::tuple<uint8_t, uint8_t, uint8_t, uint8_t>
+#include "ip_filter.hpp"
 
 // ("",  '.') -> [""]
 // ("11", '.') -> ["11"]
@@ -44,12 +32,19 @@ void print_ip(const ip_tuple& ip){
               << static_cast<int>(std::get<3>(ip)) << "\n";
 }
 
+bool is_valid_ip(const std::vector<std::string>& ip){
+    if(ip.size() != 4) throw std::invalid_argument("Неверный формат IP");
+    for(size_t i = 0; i < 4; ++i){
+        int octet = std::stoi(ip.at(i));
+        if(octet > 255 || octet < 0) throw std::invalid_argument("Ошибка валидации октета");
+    }
+    return true;
+}
+
 ip_tuple create_tuple(const std::vector<std::string>& vec){
     uint8_t octets[4];
-    if(vec.size() != 4) throw std::invalid_argument("Неверный формат IP");
     for(size_t i = 0; i < 4; ++i){
         int octet = std::stoi(vec.at(i));
-        if(octet > 255 || octet < 0) throw std::invalid_argument("Ошибка валидации октета");
         octets[i] = static_cast<uint8_t>(octet);
     }
     std::tuple my_tuple(octets[0], octets[1], octets[2], octets[3]);
@@ -107,8 +102,25 @@ constexpr ip_tuple generate_ip(uint32_t value)
      
 }
 
-int main()
-{
+bool search_ip_in_pool(const ip_tuple& target_ip, const std::vector<ip_tuple>& ip_pool) {
+    if (ip_pool.empty()) return false;
+    int low = 0, high = ip_pool.size() - 1;
+    while(low <= high) {
+        int mid = low + (high - low) / 2;
+        if(ip_pool.at(mid) == target_ip) {
+            return true;
+        }
+        else if(ip_pool.at(mid) > target_ip) {
+            high = mid - 1;
+        }
+        else {
+            low = mid + 1;
+        }
+    }
+    return false;
+}
+
+void run_ip_filter(){
     try
     {
         std::vector<ip_tuple> ip_pool;
@@ -118,7 +130,9 @@ int main()
             while(std::getline(in, line))
             {
                 std::vector<std::string> v = split(line, '\t');
-                ip_pool.push_back(create_tuple(split(v.at(0), '.')));
+                if (v[0].empty()) continue;
+                std::vector<std::string> ip = split(v.at(0), '.');
+                if(is_valid_ip(ip)) ip_pool.push_back(create_tuple(ip));
             }
         }
         else{
@@ -126,30 +140,17 @@ int main()
         }
         in.close();
 
-        
-        
-
         // TODO reverse lexicographically sort - DONE
         std::sort(ip_pool.begin(), ip_pool.end(), [](const auto& a, const auto& b){
             return a > b;
         });
         // calculation in compile time
-        constexpr ip_tuple target_ip = generate_ip(986751920);
-        bool concur = false;
-        for(const auto& ip : ip_pool)
-        {
-             print_ip(ip);
-             if(target_ip == ip) concur = true;
-        }
+        constexpr ip_tuple target_ip = generate_ip(981328);
+
+        bool concur = search_ip_in_pool(target_ip, ip_pool);
         std::cout << "GENERATED IP - ";
         print_ip(target_ip);
-        std::cout << "\n";
-        if(concur){
-            std::cout << "ALREADY EXISTS IN IP_POOL\n";
-        }
-        else{
-            std::cout << "NOT IN THE IP_POOL YET\n";
-        }
+        std::cout << (concur ? "ALREADY EXISTS IN IP_POOL" : "NOT IN THE IP_POOL YET") << "\n";
 
         // TODO filter by first byte and output - DONE
         std::cout <<"filter by first byte\n";
@@ -170,8 +171,13 @@ int main()
     }
     catch(const std::exception &e)
     {
-        std::cerr << e.what() << std::endl;
+        std::cerr << e.what() << "\n";
     }
+}
+
+int main()
+{
+    run_ip_filter();
 
     return 0;
 }
