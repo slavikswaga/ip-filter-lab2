@@ -20,8 +20,9 @@ ip_tuple create_tuple(const std::vector<std::string>& vec);
 void filter(const uint8_t& target, const auto& ip_pool);
 void filter(const uint8_t& target1, const uint8_t& target2, const auto& ip_pool);
 void filter_any(const uint8_t& target, const auto& ip_pool);
-constexpr ip_tuple generate_ip(uint32_t value);
+consteval ip_tuple generate_ip(uint32_t value);
 bool search_ip_in_pool(const ip_tuple& target_ip, const std::vector<ip_tuple>& ip_pool);
+void reading_file(std::vector<ip_tuple>& ip_pool, std::string name_file);
 
 // ("",  '.') -> [""]
 // ("11", '.') -> ["11"]
@@ -102,7 +103,7 @@ void filter_any(const uint8_t& target, const auto& ip_pool){
     }
 }
 
-constexpr ip_tuple generate_ip(uint32_t value)
+consteval ip_tuple generate_ip(uint32_t value)
 {
     if (std::is_constant_evaluated()) {
         // Эта ветка работает только в compiletime
@@ -141,4 +142,22 @@ bool search_ip_in_pool(const ip_tuple& target_ip, const std::vector<ip_tuple>& i
         }
     }
     return false;
+}
+
+void reading_file(std::vector<ip_tuple>& ip_pool, std::string name_file){
+    std::string line;
+        std::ifstream in(name_file);
+        if(in.is_open()){
+            while(std::getline(in, line))
+            {
+                std::vector<std::string> v = split(line, '\t');
+                if (v[0].empty()) continue;
+                std::vector<std::string> ip = split(v.at(0), '.');
+                if(is_valid_ip(ip)) ip_pool.push_back(create_tuple(ip));
+            }
+        }
+        else{
+            throw std::runtime_error("Не удалось открыть ip_filter.tsv");
+        }
+        in.close();
 }
