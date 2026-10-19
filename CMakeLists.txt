@@ -14,6 +14,7 @@ set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 add_executable(ip-filter-lab2 ip_filter.cpp)
+target_compile_features(ip-filter-lab2 PRIVATE cxx_std_20)
 
 enable_testing()
 
@@ -21,6 +22,7 @@ add_executable(ip_filter_tests
     test_ip_filter.cpp
 )
 target_link_libraries(ip_filter_tests PRIVATE gtest_main)
+target_compile_features(ip_filter_tests PRIVATE cxx_std_20)
 
 include(GoogleTest)
 gtest_discover_tests(ip_filter_tests)

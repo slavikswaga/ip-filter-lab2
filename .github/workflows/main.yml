@@ -1,0 +1,59 @@
+name: 'ip_filter'
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-ubuntu:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        env:
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Run Tests
+        run: ./build/ip_filter_tests
+        
+      - name: Run ip_filter
+        run: ./build/ip-filter-lab2
+        
+      - name: Build .deb package
+        run: |
+          cd build
+          cpack -G DEB
+          ls -la *.deb
+
+      - name: Create Release and Upload Asset
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ github.run_number }}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" build/*.deb --clobber
+          else
+            gh release create "$TAG" --title "Release $TAG" --notes "Automated release" build/*.deb
+          fi
+            
+  build-macos:
+    runs-on: macos-latest
+    permissions: write-all
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Run
+        run: ./build/ip-filter-lab2
