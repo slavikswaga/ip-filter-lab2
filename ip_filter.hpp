@@ -106,7 +106,7 @@ constexpr ip_tuple generate_ip(uint32_t value)
 {
     if (std::is_constant_evaluated()) {
         // Эта ветка работает только в compiletime
-        for(int i = 0; i < 262144; ++i){
+        for(int i = 0; i < 10000; ++i){
             value ^= value << 13;
             value ^= value >> 17;
             value *= 0x45D9F3B;
