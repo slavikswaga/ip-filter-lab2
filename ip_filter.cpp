@@ -13,11 +13,17 @@ int main()
 
         // calculation in compile time
         constexpr ip_tuple target_ip = generate_ip(981328);
-        bool concur = search_ip_in_pool(target_ip, ip_pool);
-            std::cout << "GENERATED IP - ";
-            print_ip(target_ip);
-            std::cout << (concur ? "ALREADY EXISTS IN IP_POOL" : "NOT IN THE IP_POOL YET") << "\n";
         
+        std::cout << "GENERATED IP - ";
+        print_ip(target_ip);
+
+        auto result = search_ip_in_pool(target_ip, ip_pool);
+        if(result.has_value()){
+            std::cout << "ALREADY EXISTS IN POOL  INDEX - " << result.value() << "\n"; 
+        }
+        else{
+            std::cout << "NOT IN THE IP_POOL YET" << "\n"; 
+        }
         //filter by first byte and output
         std::cout <<"filter by first byte\n";
         // first byte equal 1

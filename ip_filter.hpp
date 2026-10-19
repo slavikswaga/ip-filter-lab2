@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <ranges>
 #include <stdexcept>
+#include <optional>
 
 #define ip_tuple std::tuple<uint8_t, uint8_t, uint8_t, uint8_t>
 
@@ -21,7 +22,7 @@ void filter(const uint8_t& target, const auto& ip_pool);
 void filter(const uint8_t& target1, const uint8_t& target2, const auto& ip_pool);
 void filter_any(const uint8_t& target, const auto& ip_pool);
 consteval ip_tuple generate_ip(uint32_t value);
-bool search_ip_in_pool(const ip_tuple& target_ip, const std::vector<ip_tuple>& ip_pool);
+std::optional<int> search_ip_in_pool(const ip_tuple& target_ip, const std::vector<ip_tuple>& ip_pool);
 void reading_file(std::vector<ip_tuple>& ip_pool, std::string name_file);
 
 // ("",  '.') -> [""]
@@ -126,13 +127,13 @@ consteval ip_tuple generate_ip(uint32_t value)
      
 }
 
-bool search_ip_in_pool(const ip_tuple& target_ip, const std::vector<ip_tuple>& ip_pool) {
-    if (ip_pool.empty()) return false;
+std::optional<int> search_ip_in_pool(const ip_tuple& target_ip, const std::vector<ip_tuple>& ip_pool) {
+    if (ip_pool.empty()) return std::nullopt;
     int low = 0, high = ip_pool.size() - 1;
     while(low <= high) {
         int mid = low + (high - low) / 2;
         if(ip_pool.at(mid) == target_ip) {
-            return true;
+            return mid;
         }
         else if(ip_pool.at(mid) > target_ip) {
             high = mid - 1;
@@ -141,7 +142,7 @@ bool search_ip_in_pool(const ip_tuple& target_ip, const std::vector<ip_tuple>& i
             low = mid + 1;
         }
     }
-    return false;
+    return std::nullopt;
 }
 
 void reading_file(std::vector<ip_tuple>& ip_pool, std::string name_file){
